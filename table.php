@@ -1701,6 +1701,162 @@ try {
 }
 
 
+// ---------------------------------------------------------------------------
+// Reseller system (Phase 3): resellers, accounting ledger, services & payouts.
+// ---------------------------------------------------------------------------
+try {
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(190) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(200) NULL,
+        phone VARCHAR(50) NULL,
+        telegram_id VARCHAR(50) NULL,
+        bot_token VARCHAR(255) NULL,
+        bot_username VARCHAR(190) NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        balance BIGINT NOT NULL DEFAULT 0,
+        limit_balance VARCHAR(50) NOT NULL DEFAULT '',
+        limit_services VARCHAR(50) NOT NULL DEFAULT '',
+        allowed_products TEXT NULL,
+        min_withdraw VARCHAR(50) NOT NULL DEFAULT '',
+        created_at VARCHAR(30) NULL,
+        last_login VARCHAR(30) NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_ledger (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        type VARCHAR(30) NOT NULL,
+        amount BIGINT NOT NULL DEFAULT 0,
+        balance_after BIGINT NOT NULL DEFAULT 0,
+        description VARCHAR(500) NULL,
+        ref VARCHAR(190) NULL,
+        created_at VARCHAR(30) NULL,
+        INDEX idx_resledger_reseller (reseller_id),
+        INDEX idx_resledger_type (type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_service (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        product_code VARCHAR(200) NULL,
+        panel_name VARCHAR(255) NULL,
+        username VARCHAR(300) NULL,
+        uuid TEXT NULL,
+        sub_token VARCHAR(64) NULL UNIQUE,
+        sub_link TEXT NULL,
+        customer_name VARCHAR(200) NULL,
+        customer_chat_id VARCHAR(50) NULL,
+        volume_gb VARCHAR(50) NULL,
+        days VARCHAR(50) NULL,
+        price BIGINT NOT NULL DEFAULT 0,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        created_at VARCHAR(30) NULL,
+        expire_at VARCHAR(30) NULL,
+        INDEX idx_resservice_reseller (reseller_id),
+        INDEX idx_resservice_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_withdraw (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        amount BIGINT NOT NULL DEFAULT 0,
+        network VARCHAR(20) NOT NULL DEFAULT 'USDT-TRC20',
+        address VARCHAR(200) NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        admin_note VARCHAR(500) NULL,
+        txid VARCHAR(200) NULL,
+        created_at VARCHAR(30) NULL,
+        updated_at VARCHAR(30) NULL,
+        INDEX idx_reswithdraw_reseller (reseller_id),
+        INDEX idx_reswithdraw_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_payment (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        gateway VARCHAR(40) NOT NULL,
+        order_id VARCHAR(80) NOT NULL UNIQUE,
+        authority VARCHAR(256) NULL,
+        amount BIGINT NOT NULL DEFAULT 0,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        ref VARCHAR(200) NULL,
+        created_at VARCHAR(30) NULL,
+        paid_at VARCHAR(30) NULL,
+        INDEX idx_respay_reseller (reseller_id),
+        INDEX idx_respay_status (status),
+        INDEX idx_respay_authority (authority)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    // Forward-compat: optional host mapping for future multi-host balancing.
+    addFieldToTable("reseller_service", "panel_host_id", "", "VARCHAR(50)");
+
+    // Per-reseller Telegram bot (Phase 4): bot identity + webhook secret.
+    // (bot_token / bot_username already exist from Phase 3's reseller table.)
+    addFieldToTable("reseller", "bot_secret", "", "VARCHAR(120)");
+    addFieldToTable("reseller", "bot_status", "0", "VARCHAR(20)");
+    addFieldToTable("reseller", "support_link", "", "VARCHAR(200)");
+
+    // Customers that interact with a reseller's bot (own wallet per reseller).
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_customer (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        chat_id BIGINT NOT NULL,
+        first_name VARCHAR(200) NULL,
+        username VARCHAR(190) NULL,
+        balance BIGINT NOT NULL DEFAULT 0,
+        step VARCHAR(60) NOT NULL DEFAULT '',
+        step_data TEXT NULL,
+        created_at VARCHAR(30) NULL,
+        last_seen VARCHAR(30) NULL,
+        UNIQUE KEY uniq_rescust (reseller_id, chat_id),
+        INDEX idx_rescust_reseller (reseller_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    // Customer wallet top-ups through the reseller bot (gateway pending records).
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_customer_payment (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        customer_chat_id BIGINT NOT NULL,
+        gateway VARCHAR(40) NOT NULL,
+        order_id VARCHAR(80) NOT NULL UNIQUE,
+        authority VARCHAR(256) NULL,
+        amount BIGINT NOT NULL DEFAULT 0,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        ref VARCHAR(200) NULL,
+        created_at VARCHAR(30) NULL,
+        paid_at VARCHAR(30) NULL,
+        INDEX idx_rcpay_reseller (reseller_id),
+        INDEX idx_rcpay_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    // Customer-facing sell price a reseller sets per product (overrides default).
+    $connect->query("CREATE TABLE IF NOT EXISTS reseller_product_sell (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        reseller_id INT UNSIGNED NOT NULL,
+        product_code VARCHAR(200) NOT NULL,
+        sell_price BIGINT NOT NULL DEFAULT 0,
+        UNIQUE KEY uniq_ressell (reseller_id, product_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    // Ledger ownership: tag entries as customer-wallet movements when needed.
+    addFieldToTable("reseller_service", "sold_via", "panel", "VARCHAR(20)");
+    addFieldToTable("reseller_service", "sell_price", "0", "VARCHAR(50)");
+
+    // Product flags: sellable by resellers + optional reseller-specific price.
+    addFieldToTable("product", "reseller_status", "0", "VARCHAR(20)");
+    addFieldToTable("product", "reseller_price", "", "VARCHAR(50)");
+
+    // Reseller-system settings on the single `setting` row.
+    addFieldToTable("setting", "reseller_system_status", "0", "VARCHAR(20)");
+    addFieldToTable("setting", "reseller_min_withdraw", "500000", "VARCHAR(50)");
+    addFieldToTable("setting", "reseller_signup_status", "0", "VARCHAR(20)");
+} catch (Exception $e) {
+    error_log('[reseller schema] ' . $e->getMessage());
+}
+
+
 $balancemain = json_decode(select("PaySetting", "ValuePay", "NamePay", "maxbalance", "select")['ValuePay'], true);
 if (!isset($balancemain['f'])) {
     $value = json_encode(array(

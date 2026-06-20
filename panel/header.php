@@ -184,13 +184,20 @@ if (is_file($__schemaLib) && is_readable($__schemaLib)) {
 
     <div class="sidebar-section-label">مدیریت</div>
     <ul class="sidebar-menu">
+        <li><a href="sales_control.php"><span class="menu-symbol"><?php echo icon('bolt', 'svg-icon svg-sm'); ?></span><span>مرکز کنترل فروش</span></a></li>
         <li><a href="panels.php"><span class="menu-symbol"><?php echo icon('server', 'svg-icon svg-sm'); ?></span><span>مدیریت پنل‌ها</span></a></li>
         <li><a href="stock.php"><span class="menu-symbol"><?php echo icon('package', 'svg-icon svg-sm'); ?></span><span>انبار شبکه ملی</span></a></li>
+        <li><a href="resellers.php"><span class="menu-symbol"><?php echo icon('user-tag', 'svg-icon svg-sm'); ?></span><span>نمایندگان</span></a></li>
+        <li><a href="finance.php"><span class="menu-symbol"><?php echo icon('money-bill', 'svg-icon svg-md'); ?></span><span>تنظیمات مالی</span></a></li>
         <li><a href="discounts.php"><span class="menu-symbol"><?php echo icon('ticket', 'svg-icon svg-sm'); ?></span><span>کدهای تخفیف</span></a></li>
+        <li><a href="broadcast.php"><span class="menu-symbol"><?php echo icon('megaphone', 'svg-icon svg-sm'); ?></span><span>پیام همگانی</span></a></li>
     </ul>
 
     <div class="sidebar-section-label">پیکربندی</div>
     <ul class="sidebar-menu">
+        <li><a href="settings.php"><span class="menu-symbol"><?php echo icon('sliders', 'svg-icon svg-sm'); ?></span><span>تنظیمات ربات</span></a></li>
+        <li><a href="shopsettings.php"><span class="menu-symbol"><?php echo icon('package', 'svg-icon svg-sm'); ?></span><span>قابلیت‌های فروشگاه</span></a></li>
+        <li><a href="applinks.php"><span class="menu-symbol"><?php echo icon('grid', 'svg-icon svg-sm'); ?></span><span>لینک‌های نصب اپ</span></a></li>
         <li><a href="textbot.php"><span class="menu-symbol"><?php echo icon('text', 'svg-icon svg-sm'); ?></span><span>متن‌های ربات</span></a></li>
         <li><a href="keyboard.php"><span class="menu-symbol"><?php echo icon('keyboard', 'svg-icon svg-sm'); ?></span><span>چیدمان کیبورد</span></a></li>
         <li><a href="service_keyboard.php"><span class="menu-symbol"><?php echo icon('palette', 'svg-icon svg-sm'); ?></span><span>رنگ‌بندی دکمه‌ها</span></a></li>

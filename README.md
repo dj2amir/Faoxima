@@ -1,19 +1,3 @@
-## ⭐ لطفاً پروژه را **Star** کنید تا دیگران هم آن را پیدا کنند!
-
-
----
-
- #### **💸  حمایت مالی**
-
-
-<details>
-  <summary> دونیت </summary>
-
-👉 [حمایت از  ریفکتور کننده NowPayments](https://nowpayments.io/donation/faoximabot)
-
-
-
-  
 
 </details>
 
@@ -60,7 +44,7 @@
 <details>
   <summary> نصب </summary>
 
-👉 [سیپنل / aapanel](https://github.com/Mmd-Amir/Faoxima/blob/main/host.md)
+👉 [سیپنل / aapanel](https://github.com/dj2amir/Faoxima/blob/main/host.md)
 
 
   
@@ -79,7 +63,7 @@
 <details>
   <summary> نصب </summary>
 
-👉 [سرور اوبونتو 22](https://github.com/Mmd-Amir/Faoxima/blob/main/server.md)
+👉 [سرور اوبونتو 22](https://github.com/dj2amir/Faoxima/blob/main/server.md)
   
 
 </details>

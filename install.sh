@@ -3,7 +3,7 @@
 #  Faoxima Bot Installer
 # ----------------------------------------------------------------------------
 #  Version : v0.0.2
-#  GitHub  : https://github.com/Mmd-Amir/Faoxima
+#  GitHub  : https://github.com/dj2amir/Faoxima
 #  Telegram: https://t.me/faoxima
 # ----------------------------------------------------------------------------
 #  This script installs, updates, removes, and manages a Faoxima bot stack
@@ -17,9 +17,9 @@ set -o pipefail
 
 # ─── METADATA ──────────────────────────────────────────────────────────────
 readonly FAOXIMA_VERSION="v0.0.2"
-readonly FAOXIMA_REPO="Mmd-Amir/Faoxima"
+readonly FAOXIMA_REPO="dj2amir/Faoxima"
 readonly FAOXIMA_GITHUB="https://github.com/${FAOXIMA_REPO}"
-readonly FAOXIMA_TELEGRAM="https://t.me/faoxima"
+readonly FAOXIMA_TELEGRAM="https://t.me/mirzajavabgoo"
 
 # ─── PATHS ─────────────────────────────────────────────────────────────────
 readonly BOT_DIR="/var/www/html/faoxima"
